@@ -1963,7 +1963,7 @@ config CPU_OVERCLOCK
 config OC_ULTIMATE
 	bool "Ultimate CPU Overclocking"
 	depends on CPU_OVERCLOCK
-	default y
+	default n
 	help
 	  Ultimate Krait overclocking up to 2.3 GHz 
 
