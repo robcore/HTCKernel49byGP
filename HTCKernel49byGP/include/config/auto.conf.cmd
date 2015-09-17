@@ -62,6 +62,7 @@ deps_config := \
 	fs/configfs/Kconfig \
 	fs/sysfs/Kconfig \
 	fs/proc/Kconfig \
+	fs/exfat/Kconfig \
 	fs/ntfs/Kconfig \
 	fs/fat/Kconfig \
 	fs/udf/Kconfig \
