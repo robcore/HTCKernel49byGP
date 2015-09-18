@@ -2867,18 +2867,20 @@ static void synaptics_ts_finger_func(struct synaptics_ts_data *ts)
 							if (y_pos[i] > 2700 && x_pos[i] > 500 && x_pos[i] < 1100)
 							sweep2wake_func(1); // home button		
 	
+
 							else if (y_pos[i] > 2700 && x_pos[i] > 1100)
 							sweep2wake_func(2); // apps button	
-		    	                                            }
 
+							}
 						if (scr_suspended == false) {						
 						
-							if (y_pos[i] > 2700 && x_pos[i] < 500)
+
+						if (y_pos[i] > 2700 && x_pos[i] < 500)
 							sweep2wake_func(1); // back button
 
-							else if (y_pos[i] > 2700 && x_pos[i] > 1100)
+						else if (y_pos[i] > 2700 && x_pos[i] > 1100)
 							sweep2wake_func(2); // apps button		
-									     }
+						}
 #endif	
 
 						if ((finger_press_changed & BIT(i)) && ts->debug_log_level & BIT(3)) {
