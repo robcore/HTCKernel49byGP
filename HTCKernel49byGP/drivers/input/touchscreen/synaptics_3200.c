@@ -205,7 +205,7 @@ static void syn_handle_block_touch(struct synaptics_ts_data *ts, int enable)
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_SWEEP2WAKE
 
 #define S2W_START 3
-#define S2W_TIMEOUT 35
+#define S2W_TIMEOUT 30
 #define S2W_TIMEOUT2 60
 #define S2W_TIMEOUT3 50
 #define DT2W_TIMEOUT_MAX 600
@@ -219,7 +219,7 @@ static void syn_handle_block_touch(struct synaptics_ts_data *ts, int enable)
 
 static bool scr_suspended = false;
 static int s2w_switch = 15;
-static int s2s_switch = 3;
+static int s2s_switch = 2;
 static int gestures_switch = 1;
 static int dt2w_switch = 1;
 static int pocket_detect = 1;
@@ -231,7 +231,7 @@ static bool barrierx[2] = {false, false}, exec_countx = true;
 static int firstx = 0, firsty = 0;
 static unsigned long firsty_time = 0, firstx_time = 0;
 static int wakesleep_vib = 0;
-static int vib_strength = 0;
+static int vib_strength = 15;
 
 static struct wake_lock l2w_wakelock;
 
@@ -291,7 +291,11 @@ static void sweep2wake_presspwr(struct work_struct * sweep2wake_presspwr_work) {
 		}
 	}
 
-	
+	if (wakesleep_vib) {
+	        vibrate(vib_strength);
+		wakesleep_vib = 0;
+	}
+
 	if (!mutex_trylock(&pwrkeyworklock))
 		return;
 	
@@ -2369,7 +2373,7 @@ static void sweep2wake_vert_func(int x, int y)
 								if (gestures_switch) {
 									report_gesture(3);
 								} else if (s2w_switch & SWEEP_UP) {
-									wakesleep_vib = 0;
+									wakesleep_vib = 1;
 									sweep2wake_pwrtrigger();
 								}
 								exec_county = false;
@@ -2398,7 +2402,7 @@ static void sweep2wake_vert_func(int x, int y)
 								if (gestures_switch) {
 									report_gesture(4);
 								} else if (s2w_switch & SWEEP_DOWN) {
-									wakesleep_vib = 0;
+									wakesleep_vib = 1;
 									sweep2wake_pwrtrigger();
 								}
 								exec_county = false;
@@ -2485,7 +2489,10 @@ static void sweep2wake_horiz_func(int x, int y)
 }
 
 static void sweep2wake_func(int button_id) {
-	
+	if (!s2s_switch &&
+		!(s2w_switch & SWEEP_RIGHT) && !(s2w_switch & SWEEP_LEFT)) {
+		return;
+	}
 	
 	s2w_time[2] = s2w_time[1];
 	s2w_time[1] = s2w_time[0];
@@ -2494,26 +2501,23 @@ static void sweep2wake_func(int button_id) {
 	s2w_hist[1] = s2w_hist[0];
 	s2w_hist[0] = button_id;
 
-printk("[S2W] in func button id 1=%i, button id 2= %i\n", s2w_hist[0], s2w_hist[1]);
-printk("[S2W] s2w time 0=%lu, s2w time  1= %lu\n", s2w_time[0], s2w_time[1]);
-
-	if ((s2w_time[0]-s2w_time[1]) < S2W_TIMEOUT ) {
+	if ((s2w_time[0]-s2w_time[1]) < S2W_TIMEOUT && (s2w_time[0]-s2w_time[1]) > S2W_START) {
 
 		if (s2w_hist[1] == 1 && s2w_hist[0] == 2) {
 			reset_sweep2wake();
-			if ((scr_suspended  && s2w_switch) || 
-				(!scr_suspended && s2s_switch)) {
+			if ((scr_suspended  && (s2w_switch & SWEEP_RIGHT)) || 
+				(!scr_suspended && (s2s_switch & SWEEP_RIGHT))) {
 				printk("[S2W]: sweep right\n");
-				wakesleep_vib = 0;
+				wakesleep_vib = 1;
 				sweep2wake_pwrtrigger();
 			}
 
 		} else if (s2w_hist[1] == 2 && s2w_hist[0] == 1) {
 			reset_sweep2wake();
-			if ((scr_suspended  && s2w_switch) || 
-				(!scr_suspended && s2s_switch )) {
+			if ((scr_suspended  && (s2w_switch & SWEEP_LEFT)) || 
+				(!scr_suspended && (s2s_switch & SWEEP_LEFT))) {
 				printk("[S2W]: sweep left\n");
-				wakesleep_vib = 0;
+				wakesleep_vib = 1;
 				sweep2wake_pwrtrigger();
 			}
 		} else {
@@ -2571,7 +2575,7 @@ static void dt2w_func(int x, int y, cputime64_t trigger_time)
 			if (gestures_switch) {
 				report_gesture(5);
 			} else {
-				wakesleep_vib = 0;
+				wakesleep_vib = 1;
 				sweep2wake_pwrtrigger();
 			}
 		} else {
@@ -2881,9 +2885,11 @@ static void synaptics_ts_finger_func(struct synaptics_ts_data *ts)
 									     }
 #endif	
 
+
+
 						if ((finger_press_changed & BIT(i)) && ts->debug_log_level & BIT(3)) {
 							if(ts->width_factor && ts->height_factor){
-								printk(
+								pr_debug(
 									"[TP] Screen:F[%02d]:Down, X=%d, Y=%d, W=%d, Z=%d, IM:%d, CIDIM:%d, Freq:%d, NS:%d\n",
 									i+1, (finger_data[i][0]*ts->width_factor)>>SHIFT_BITS,
 									(finger_data[i][1]*ts->height_factor)>>SHIFT_BITS,
@@ -4387,4 +4393,4 @@ module_init(synaptics_ts_init);
 module_exit(synaptics_ts_exit);
 
 MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL"); 
