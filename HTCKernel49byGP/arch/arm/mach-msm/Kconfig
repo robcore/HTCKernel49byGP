@@ -677,6 +677,13 @@ config PERFLOCK
         default n
         bool "HTC Performance Lock"
 
+config PERFLOCK_HACK
+        depends on PERFLOCK
+        default y
+        bool "HTC Performance Lock HACK"
+	    help
+	      Basically removes Perflock but allows insertion of precompiled HTC modules
+
 config DEBUG_KSWAPD
         default n
         bool "HTC Debug Kswapd busy"

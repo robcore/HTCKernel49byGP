@@ -4499,6 +4499,7 @@
 0xe46b5b1b	unuse_mm	vmlinux	EXPORT_SYMBOL_GPL
 0x767ceacd	__alloc_pages_nodemask	vmlinux	EXPORT_SYMBOL
 0x46edf63b	perf_unlock	vmlinux	EXPORT_SYMBOL
+0xc0e90c4e	release_boot_lock	vmlinux	EXPORT_SYMBOL
 0x335930f9	pm8xxx_batt_alarm_pwm_rate_set	vmlinux	EXPORT_SYMBOL
 0xec6d3c4f	elv_abort_queue	vmlinux	EXPORT_SYMBOL
 0x918ad429	ring_buffer_lock_reserve	vmlinux	EXPORT_SYMBOL_GPL

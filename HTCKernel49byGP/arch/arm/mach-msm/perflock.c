@@ -25,6 +25,9 @@
 #include <linux/slab.h>
 #include <mach/perflock.h>
 #include "acpuclock.h"
+#ifndef CONFIG_PERFLOCK_HACK
+
+
 
 #define PERF_LOCK_INITIALIZED	(1U << 0)
 #define PERF_LOCK_ACTIVE	(1U << 1)
@@ -91,7 +94,7 @@ static void perflock_early_suspend(struct early_suspend *handler)
 		spin_unlock_irqrestore(&policy_update_lock, irqflags);
 		return;
 	}
-	screen_off_policy_req++;
+	screen_off_policy_req;
 	spin_unlock_irqrestore(&policy_update_lock, irqflags);
 
 	for_each_online_cpu(cpu) {
@@ -130,7 +133,7 @@ static void perflock_late_resume(struct early_suspend *handler)
 		spin_unlock_irqrestore(&policy_update_lock, irqflags);
 		return;
 	}
-	screen_on_policy_req++;
+	screen_on_policy_req;
 	spin_unlock_irqrestore(&policy_update_lock, irqflags);
 
 	for_each_online_cpu(cpu) {
@@ -141,7 +144,7 @@ static void perflock_late_resume(struct early_suspend *handler)
 static struct early_suspend perflock_power_suspend = {
 	.suspend = perflock_early_suspend,
 	.resume = perflock_late_resume,
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB  1,
 };
 
 /* 7k projects need to raise up cpu freq before panel resume for stability */
@@ -152,7 +155,7 @@ static struct early_suspend perflock_power_suspend = {
 static struct early_suspend perflock_onchg_suspend = {
 	.suspend = perflock_early_suspend,
 	.resume = perflock_late_resume,
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB  1,
 };
 #endif
 
@@ -167,7 +170,7 @@ static int __init perflock_screen_policy_init(void)
 	defined(CONFIG_ARCH_MSM7201A))
 	register_onchg_suspend(&perflock_onchg_suspend);
 #endif
-	screen_on_policy_req++;
+	screen_on_policy_req;
 	for_each_online_cpu(cpu) {
 		cpufreq_update_policy(cpu);
 	}
@@ -690,7 +693,7 @@ EXPORT_SYMBOL(release_boot_lock);
 static void perf_acpu_table_fixup(void)
 {
 	int i;
-	for (i = 0; i < table_size; ++i) {
+	for (i = 0; i < table_size; i) {
 		if (perf_acpu_table[i] > policy_max * 1000)
 			perf_acpu_table[i] = policy_max * 1000;
 		else if (perf_acpu_table[i] < policy_min * 1000)
@@ -707,7 +710,7 @@ static void perf_acpu_table_fixup(void)
 static void cpufreq_ceiling_acpu_table_fixup(void)
 {
 	int i;
-	for (i = 0; i < table_size; ++i) {
+	for (i = 0; i < table_size; i) {
 		if (cpufreq_ceiling_acpu_table[i] > policy_max * 1000)
 			cpufreq_ceiling_acpu_table[i] = policy_max * 1000;
 		else if (cpufreq_ceiling_acpu_table[i] < policy_min * 1000)
@@ -883,3 +886,39 @@ perflock_scaling_min_store(struct kobject *kobj, struct kobj_attribute *attr,
 	return 0;
 }
 #endif
+
+#else
+void perf_lock(struct perf_lock *lock) { return; }
+EXPORT_SYMBOL(perf_lock);
+
+void perf_unlock(struct perf_lock *lock) { return; }
+EXPORT_SYMBOL(perf_unlock);
+
+inline int is_perf_lock_active(struct perf_lock *lock) { return 0; }
+EXPORT_SYMBOL(is_perf_lock_active);
+
+int is_perf_locked(void) { return 0; }
+EXPORT_SYMBOL(is_perf_locked);
+
+struct perf_lock *perflock_acquire(const char *name) { return NULL; }
+EXPORT_SYMBOL(perflock_acquire);
+
+int perflock_release(const char *name) { return 0; }
+EXPORT_SYMBOL(perflock_release);
+
+void release_boot_lock(void) { return; }
+EXPORT_SYMBOL(release_boot_lock);
+
+void perf_lock_init(struct perf_lock *lock, unsigned int type, unsigned int level, const char *name) { return; }
+EXPORT_SYMBOL(perf_lock_init);
+
+int perflock_override(const struct cpufreq_policy *policy, const unsigned int new_freq)  { return 0; }
+
+#ifdef CONFIG_HTC_PNPMGR
+ssize_t perflock_scaling_max_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf) { return 0; }
+ssize_t perflock_scaling_max_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t n) { return 0; }
+ssize_t perflock_scaling_min_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf) { return 0; }
+ssize_t perflock_scaling_min_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t n) { return 0; }
+#endif
+#endif
+

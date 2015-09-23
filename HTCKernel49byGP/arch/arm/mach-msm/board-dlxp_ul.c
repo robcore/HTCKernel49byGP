@@ -77,7 +77,7 @@
 #include <linux/mfd/pm8xxx/pm8xxx-vibrator-pwm.h>
 #include <mach/htc_ramdump.h>
 
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 #include <mach/perflock.h>
 #endif
 
@@ -6721,7 +6721,7 @@ static struct platform_device *common_devices[] __initdata = {
 #ifdef CONFIG_MSM_CACHE_ERP
 	&apq8064_device_cache_erp,
 #endif
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 	&msm8064_device_perf_lock,
 #endif
 	&apq_compr_dsp,

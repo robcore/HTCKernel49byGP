@@ -16,7 +16,7 @@
 #include <linux/vmalloc.h>
 #include <mach/board.h>
 #include <mach/rpm.h>
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 #include <mach/perflock.h>
 #endif
 #include <mach/rpm-8960.h>
@@ -334,7 +334,7 @@ void htc_pm_monitor_work(struct work_struct *work)
 	htc_timer_stats_onoff('0');
 	htc_timer_stats_show(300);
 	htc_timer_stats_onoff('1');
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 	htc_print_active_perf_locks();
 #endif
 

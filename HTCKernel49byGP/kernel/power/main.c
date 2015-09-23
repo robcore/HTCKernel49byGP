@@ -19,7 +19,7 @@
 
 #include "power.h"
 
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 #include <mach/perflock.h>
 #endif
 
@@ -490,7 +490,7 @@ power_attr(wake_lock);
 power_attr(wake_unlock);
 #endif
 
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 static struct perf_lock user_cpu_perf_lock;
 static struct perf_lock user_cpu_ceiling_lock;
 static struct perf_lock user_perf_lock[PERF_LOCK_INVALID];
@@ -738,45 +738,9 @@ cpufreq_ceiling_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 power_attr(cpufreq_ceiling);
 
-#ifdef CONFIG_HTC_ONMODE_CHARGING
-static ssize_t state_onchg_show(struct kobject *kobj, struct kobj_attribute *attr,
-			     char *buf)
-{
-	char *s = buf;
-	if (get_onchg_state())
-		s += sprintf(s, "chgoff ");
-	else
-		s += sprintf(s, "chgon ");
 
-	if (s != buf)
-		
-		*(s-1) = '\n';
 
-	return (s - buf);
-}
 
-static ssize_t
-state_onchg_store(struct kobject *kobj, struct kobj_attribute *attr,
-	       const char *buf, size_t n)
-{
-	char *p;
-	int len;
-
-	p = memchr(buf, '\n', n);
-	len = p ? p - buf : n;
-
-	if (len == 5 || len == 6 || len == 7) {
-		if (!strncmp(buf, "chgon", len))
-			request_onchg_state(1);
-		else if (!strncmp(buf, "chgoff", len))
-			request_onchg_state(0);
-	}
-
-	return 0;
-}
-
-power_attr(state_onchg);
-#endif
 
 static int cpunum_max;
 static int cpunum_min;
@@ -863,6 +827,51 @@ power_attr(cpunum_floor);
 power_attr(cpunum_ceiling);
 #endif
 
+
+
+
+#ifdef CONFIG_HTC_ONMODE_CHARGING
+static ssize_t state_onchg_show(struct kobject *kobj, struct kobj_attribute *attr,
+			     char *buf)
+{
+	char *s = buf;
+	if (get_onchg_state())
+		s += sprintf(s, "chgoff ");
+	else
+		s += sprintf(s, "chgon ");
+
+	if (s != buf)
+		
+		*(s-1) = '\n';
+
+	return (s - buf);
+}
+
+static ssize_t
+state_onchg_store(struct kobject *kobj, struct kobj_attribute *attr,
+	       const char *buf, size_t n)
+{
+	char *p;
+	int len;
+
+	p = memchr(buf, '\n', n);
+	len = p ? p - buf : n;
+
+	if (len == 5 || len == 6 || len == 7) {
+		if (!strncmp(buf, "chgon", len))
+			request_onchg_state(1);
+		else if (!strncmp(buf, "chgoff", len))
+			request_onchg_state(0);
+	}
+
+	return 0;
+}
+
+power_attr(state_onchg);
+#endif
+
+
+
 static struct attribute *g[] = {
 	&state_attr.attr,
 #ifdef CONFIG_PM_TRACE
@@ -874,6 +883,7 @@ static struct attribute *g[] = {
 	&wakeup_count_attr.attr,
 	&touch_event_attr.attr,
 	&touch_event_timer_attr.attr,
+
 #ifdef CONFIG_PM_DEBUG
 	&pm_test_attr.attr,
 #endif
@@ -885,7 +895,7 @@ static struct attribute *g[] = {
 	&state_onchg_attr.attr,
 #endif
 #endif
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 	&perflock_attr.attr,
 	&cpufreq_ceiling_attr.attr,
 	&launch_event_attr.attr,
@@ -923,7 +933,7 @@ static inline int pm_start_workqueue(void) { return 0; }
 static int __init pm_init(void)
 {
 	int error = pm_start_workqueue();
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 	int i;
 	static char ceil_buf[PERF_LOCK_INVALID][38];
 	static char perf_buf[PERF_LOCK_INVALID][24];
@@ -940,7 +950,7 @@ static int __init pm_init(void)
 
 
 	power_kobj = kobject_create_and_add("power", NULL);
-#ifdef CONFIG_PERFLOCK
+#if defined(CONFIG_PERFLOCK) && !defined(CONFIG_PERFLOCK_HACK)
 	perf_lock_init(&user_cpu_perf_lock, TYPE_PERF_LOCK, PERF_LOCK_HIGHEST, "User CPU Highest Perflock"); 
 	perf_lock_init(&user_cpu_ceiling_lock, TYPE_CPUFREQ_CEILING, PERF_LOCK_HIGH, "User CPU High cpufreq_ceiling lock"); 
 	for (i = PERF_LOCK_LOWEST; i < PERF_LOCK_INVALID; i++) {

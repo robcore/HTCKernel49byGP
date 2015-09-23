@@ -22,6 +22,14 @@
 extern int board_mfg_mode(void);
 #endif
 
+
+int powersave_enabled = 0;
+int nightmode_enabled = 0;
+int grp_alarm_sec = 0;
+
+int screenoff_policy = 1;
+
+
 static int rtc_timer_enqueue(struct rtc_device *rtc, struct rtc_timer *timer);
 static void rtc_timer_remove(struct rtc_device *rtc, struct rtc_timer *timer);
 
