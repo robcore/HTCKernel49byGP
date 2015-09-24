@@ -94,7 +94,7 @@ static void perflock_early_suspend(struct early_suspend *handler)
 		spin_unlock_irqrestore(&policy_update_lock, irqflags);
 		return;
 	}
-	screen_off_policy_req;
+	screen_off_policy_req++;
 	spin_unlock_irqrestore(&policy_update_lock, irqflags);
 
 	for_each_online_cpu(cpu) {
@@ -133,7 +133,7 @@ static void perflock_late_resume(struct early_suspend *handler)
 		spin_unlock_irqrestore(&policy_update_lock, irqflags);
 		return;
 	}
-	screen_on_policy_req;
+	screen_on_policy_req++;
 	spin_unlock_irqrestore(&policy_update_lock, irqflags);
 
 	for_each_online_cpu(cpu) {
@@ -144,7 +144,7 @@ static void perflock_late_resume(struct early_suspend *handler)
 static struct early_suspend perflock_power_suspend = {
 	.suspend = perflock_early_suspend,
 	.resume = perflock_late_resume,
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB  1,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
 };
 
 /* 7k projects need to raise up cpu freq before panel resume for stability */
@@ -155,7 +155,7 @@ static struct early_suspend perflock_power_suspend = {
 static struct early_suspend perflock_onchg_suspend = {
 	.suspend = perflock_early_suspend,
 	.resume = perflock_late_resume,
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB  1,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
 };
 #endif
 
@@ -170,7 +170,7 @@ static int __init perflock_screen_policy_init(void)
 	defined(CONFIG_ARCH_MSM7201A))
 	register_onchg_suspend(&perflock_onchg_suspend);
 #endif
-	screen_on_policy_req;
+	screen_on_policy_req++;
 	for_each_online_cpu(cpu) {
 		cpufreq_update_policy(cpu);
 	}
@@ -693,7 +693,7 @@ EXPORT_SYMBOL(release_boot_lock);
 static void perf_acpu_table_fixup(void)
 {
 	int i;
-	for (i = 0; i < table_size; i) {
+	for (i = 0; i < table_size; ++i) {
 		if (perf_acpu_table[i] > policy_max * 1000)
 			perf_acpu_table[i] = policy_max * 1000;
 		else if (perf_acpu_table[i] < policy_min * 1000)
@@ -710,7 +710,7 @@ static void perf_acpu_table_fixup(void)
 static void cpufreq_ceiling_acpu_table_fixup(void)
 {
 	int i;
-	for (i = 0; i < table_size; i) {
+	for (i = 0; i < table_size; ++i) {
 		if (cpufreq_ceiling_acpu_table[i] > policy_max * 1000)
 			cpufreq_ceiling_acpu_table[i] = policy_max * 1000;
 		else if (cpufreq_ceiling_acpu_table[i] < policy_min * 1000)
